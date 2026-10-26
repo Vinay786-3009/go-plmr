@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-slate-900 bg-slate-900/5;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  /* Mobile App Shell container styling */
+  .mobile-shell {
+    @apply max-w-md mx-auto min-h-screen bg-white shadow-2xl relative flex flex-col overflow-x-hidden border-x border-slate-200/50;
+  }
+
+  /* Yellow top header matching Ride-Karo / Rapido */
+  .yellow-header {
+    @apply bg-[#F9D342] text-slate-900 px-4 py-3.5 sticky top-0 z-30 shadow-sm flex items-center justify-between;
+  }
+
+  /* Buttons */
+  .btn-yellow {
+    @apply inline-flex items-center justify-center px-6 py-3.5 text-sm font-black text-slate-900 bg-[#F9D342] hover:bg-[#f5c71a] active:bg-[#eab308] rounded-full shadow-sm hover:shadow-yellow-glow transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+
+  .btn-black {
+    @apply inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-white bg-slate-900 hover:bg-black active:bg-slate-950 rounded-full shadow-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+
+  .btn-social {
+    @apply w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-[0.99] transition-all shadow-sm;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-5 py-3.5 text-sm font-bold text-slate-900 bg-[#F9D342] hover:bg-[#f5c71a] active:bg-[#eab308] rounded-2xl shadow-sm hover:shadow transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-3 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 border border-slate-200 rounded-2xl shadow-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-2xl shadow-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3.5 text-xs font-semibold bg-slate-50 border border-slate-200/90 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#FBC02D] focus:ring-2 focus:ring-[#FBC02D]/20 transition-all duration-150;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide;
+  }
+  
+  .badge-success {
+    @apply bg-emerald-50 text-emerald-800 border border-emerald-200;
+  }
+
+  .badge-warning {
+    @apply bg-amber-50 text-amber-800 border border-amber-200;
+  }
+
+  .badge-danger {
+    @apply bg-rose-50 text-rose-800 border border-rose-200;
+  }
+
+  .badge-info {
+    @apply bg-sky-50 text-sky-800 border border-sky-200;
+  }
+
+  .badge-neutral {
+    @apply bg-slate-100 text-slate-700 border border-slate-200;
+  }
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+/* Leaflet map container */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 10;
+  font-family: inherit;
+}

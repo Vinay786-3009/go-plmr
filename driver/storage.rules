@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+
+    // Driver files storage rules
+    match /drivers/{userId}/{category}/{fileName} {
+      // Profile pictures can be viewed by riders and drivers
+      allow read: if isAuthenticated() && (
+        category == 'profile' || 
+        isOwner(userId) || 
+        isAdmin()
+      );
+
+      // Sensitive documents (license, rc, insurance) can only be uploaded by the driver
+      // with max 5MB size limit
+      allow write: if (isOwner(userId) || isAdmin()) &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|application/pdf');
+    }
+  }
+}

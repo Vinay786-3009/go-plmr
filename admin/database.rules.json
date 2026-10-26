@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "driverLocations": {
+      ".read": "auth != null && (auth.token.admin == true || auth.token.role == 'admin')",
+      "$driverUid": {
+        ".read": "auth != null && (auth.uid == $driverUid || auth.token.admin == true || auth.token.role == 'admin')",
+        ".write": "auth != null && (auth.uid == $driverUid || auth.token.admin == true || auth.token.role == 'admin')",
+        ".validate": "newData.hasChildren(['latitude', 'longitude', 'status', 'lastUpdated'])"
+      }
+    }
+  }
+}

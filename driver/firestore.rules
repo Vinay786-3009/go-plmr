@@ -1,0 +1,151 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if caller is an authorized administrator
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'admin' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Helper function to check if caller owns the resource
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Admin directory (admin credentials & metadata)
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Users Collection (Customers and Shared User Profiles)
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if request.auth != null && request.auth.uid == userId && request.resource.data.role != 'admin';
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Drivers Collection
+    match /drivers/{driverId} {
+      allow read: if request.auth != null; // Registered users can see basic driver info for booked rides
+      allow create: if isOwner(driverId);
+      allow update: if (isOwner(driverId) && 
+        // Drivers cannot approve themselves or alter ratings directly
+        request.resource.data.approvalStatus == resource.data.approvalStatus
+      ) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Rides Collection
+    match /rides/{rideId} {
+      // Allow read by customer, assigned driver, admin, OR any authenticated driver when ride is in open broadcast ('requested', 'searching')
+      allow read: if request.auth != null && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.driverId == request.auth.uid ||
+        resource.data.status in ['requested', 'searching'] ||
+        isAdmin()
+      );
+
+      // Customers create rides
+      allow create: if request.auth != null && request.resource.data.customerId == request.auth.uid;
+
+      // Updates:
+      // 1. Existing customer / driver / admin lifecycle updates
+      // 2. Driver accepting an open unassigned ride
+      allow update: if request.auth != null && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.driverId == request.auth.uid ||
+        isAdmin() ||
+        (
+          resource.data.driverId == null &&
+          resource.data.status in ['requested', 'searching'] &&
+          request.resource.data.driverId == request.auth.uid &&
+          request.resource.data.status == 'driver_assigned'
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Vehicle Categories (Read by everyone, written only by admins)
+    match /vehicleCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Fare Configurations (Read by authenticated users, updated only by admins)
+    match /fareConfigurations/{configId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Payments & Financial Records
+    match /payments/{paymentId} {
+      allow read: if request.auth != null && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.driverId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    // Settlements (Driver Payouts)
+    match /settlements/{settlementId} {
+      allow read: if request.auth != null && (
+        resource.data.driverId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    // Complaints & Support Tickets
+    match /complaints/{complaintId} {
+      allow read: if request.auth != null && (
+        resource.data.raisedByUid == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if request.auth != null && request.resource.data.raisedByUid == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Helmet Verifications (Bike rides)
+    match /helmetVerifications/{verificationId} {
+      allow read: if request.auth != null && (
+        resource.data.driverId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if request.auth != null && request.resource.data.driverId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Service Areas & Geofencing
+    match /serviceAreas/{areaId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Platform Notifications
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null && (resource.data.recipientUid == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Audit Logs (Strictly write-append by admins, immutable, no client delete)
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false; // Immutable audit trail
+    }
+
+    // OTP Verifications (Strictly private)
+    match /otp_verifications/{email} {
+      allow read, write: if false;
+    }
+  }
+}

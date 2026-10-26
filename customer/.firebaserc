@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "go-plmr"
+  },
+  "targets": {
+    "go-plmr": {
+      "hosting": {
+        "customer": [
+          "go-plmr-customer"
+        ]
+      }
+    }
+  }
+}
